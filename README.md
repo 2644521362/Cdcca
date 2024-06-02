@@ -23,7 +23,7 @@ Our framework is structured into three key components: a device-to-cloud uplink 
 
 
 ## Citation
-If you find our SC-MLLM code and paper useful, hope you can cite our article:
+If you find our CDCCA code and paper useful, hope you can cite our article:
 ```bash
 @article{wang2023cloud,
   title={Cloud-Device Collaborative Learning for Multimodal Large Language Models},
