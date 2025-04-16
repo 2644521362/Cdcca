@@ -1,34 +1,85 @@
-<h1>Cloud-Device Collaborative Learning for Multimodal Large Language Models</h1>
 
-## Intro
-Official implementation of ['Cloud-Device Collaborative Learning for Multimodal Large Language Models'](https://arxiv.org/pdf/2312.16279).
+# 📡 Cloud-Edge Collaborative Inference with LLaMA Accessory
 
-This repository presents **CDCCA**, a Self-Corrected Multimodal Large Language Model designed to optimize the performance of models deployed on client devices by leveraging advanced cloud capabilities. 
- 🔥
-## Abstract
-The burgeoning field of Multimodal Large Language Models (MLLMs) has exhibited remarkable performance in diverse tasks such as captioning, commonsense reasoning, and visual scene understanding. However, the deployment of these large-scale MLLMs on client devices is hindered by their extensive model parameters, leading to a notable decline in generalization capabilities when these models are compressed for device deployment. Addressing this challenge, we introduce a Cloud-Device Collaborative Continual Adaptation framework, designed to enhance the performance of compressed, device-deployed MLLMs by leveraging the robust capabilities of cloud-based, larger-scale MLLMs.
-Our framework is structured into three key components: a device-to-cloud uplink for efficient data transmission, cloud-based knowledge adaptation, and an optimized cloud-to-device downlink for model deployment. In the uplink phase, we employ an Uncertainty-guided Token Sampling (UTS) strategy to effectively filter out-of-distribution tokens, thereby reducing transmission costs and improving training efficiency. On the cloud side, we propose Adapter-based Knowledge Distillation (AKD) method to transfer refined knowledge from large-scale to compressed, pocket-size MLLMs. Furthermore, we propose a Dynamic Weight update Compression (DWC) strategy for the downlink, which adaptively selects and quantizes updated weight parameters, enhancing transmission efficiency and reducing the representational disparity between cloud and device models. Extensive experiments on several multimodal benchmarks demonstrate the superiority of our proposed framework over prior Knowledge Distillation and device-cloud collaboration methods. Notably, we also validate the feasibility of our approach to real-world experiments.
+This repository provides a complete tutorial and implementation for **cloud-edge collaborative large model inference**, based on [LLaMA-Accessory](https://github.com/OpenLMLab/llama-accessory), with support for token-level uncertainty-driven transmission and  knowledge update between edge (7B) and cloud (13B) models.
 
+---
 
-## Contributors
-**Authors:**
-- Guanqun Wang<sup>1*</sup>, Jiaming Liu<sup>1*</sup>, Chenxuan Li<sup>1*</sup>, Yuan Zhang<sup>1</sup>, Junpeng Ma<sup>1</sup>, Xinyu Wei<sup>1</sup>, Kevin Zhang<sup>1</sup>
-- Maurice Chong<sup>1</sup>, Renrui Zhang<sup>2</sup>, Yijiang Liu<sup>3</sup>, Shanghang Zhang<sup>1†</sup>
+## 🔧 1. Environment Setup
 
-**Affiliations:**
-- <sup>1</sup>National Key Laboratory for Multimedia Information Processing, School of Computer Science, Peking University
-- <sup>2</sup>Shanghai AI Lab
-- <sup>3</sup>Nanjing University
+Follow the LLaMA-Accessory instructions to configure your environment:
 
+Make sure your environment supports both the LLaMA 7B and 13B models. You can also refer to this repo for ways to extend multimodal large models to other base LLMs.
 
+Additionally, make sure to install the following dependencies for AKD on the cloud side:
 
-## Citation
-If you find our CDCCA code and paper useful, hope you can cite our article:
 ```bash
-@article{wang2023cloud,
-  title={Cloud-Device Collaborative Learning for Multimodal Large Language Models},
-  author={Wang, Guanqun and Liu, Jiaming and Li, Chenxuan and Ma, Junpeng and Zhang, Yuan and Wei, Xinyu and Zhang, Kevin and Chong, Maurice and Zhang, Ray and Liu, Yijiang and others},
-  journal={arXiv preprint arXiv:2312.16279},
-  year={2023}
-}
+pip install PyWavelets
+pip install pytorch_wavelets
 ```
+
+---
+
+## 🖥️ 2. Launch Cloud-Side Listener
+
+Run the cloud-side script to launch the LLaMA-13B model in inference mode and **wait for incoming uncertainty token from the edge**:
+
+```bash
+bash exps/finetune/mm/inference_13B.sh
+```
+
+This will:
+- Load the 13B model and initialize the socket server
+- Wait for uncertainty tokens from the edge-side model
+- Prepare for collaborative distillation
+
+---
+
+## 📱 3. Run Edge-Side Inference and Token Uplink
+
+Run the edge-side script to:
+- Load the LLaMA-7B lightweight model
+- Perform local inference
+- Use UTS to select **uncertainty tokens**
+- Send selected tokens to the cloud over uplink
+
+```bash
+bash exps/finetune/mm/inference_7B.sh
+```
+
+This reduces bandwidth usage by only transmitting informative tokens while preserving performance.
+
+---
+
+## 🔄 4. Cloud-Edge Collaborative Update
+
+After receiving the uncertainty tokens, run the collaborative update script on the cloud to:
+- Fuse cloud and edge outputs
+- Apply token-level distillation to update both models
+- Compute and transmit updated parameters to the edge
+
+```bash
+bash exps/finetune/mm/update_collab.sh
+```
+
+---
+
+## 🚀 Features
+
+- ✅ Uncertainty-guided token transmission (MC Dropout / entropy filtering)
+- ✅ Plug-and-play compatibility with LLaMA 7B/13B
+- ✅ Socket-based edge-cloud communication (via `pt_transporter.py`)
+- ✅ Support for token fusion and DWC-based downlink update
+- ✅ Modular script interface for easy deployment
+
+---
+
+
+
+---
+
+## 📬 Contact
+
+If you have questions or are interested in collaboration, feel free to open an issue or contact the maintainer.
+
+---
